@@ -1,7 +1,6 @@
 import streamlit as st
 from PyPDF2 import PdfReader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-# from langchain.vectorstores import FAISS
 from langchain_community.vectorstores import FAISS
 from langchain.prompts import PromptTemplate
 from langchain.chains.question_answering import load_qa_chain
@@ -9,16 +8,13 @@ from dotenv import load_dotenv
 import os
 import time
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-# from langchain_google_genai import ChatGoogleGenerativeAI
-from transformers import pipeline
-from huggingface_hub import login
+from huggingface_hub import login, InferenceClient
 from langchain_ollama import OllamaLLM
 
 # Load environment variables from .env file
 load_dotenv()
 
 # Retrieve API keys from environment variables
-# google_api_key = os.getenv("GOOGLE_API_KEY")
 huggingface_api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 
 # Ensure Hugging Face authentication is in place
@@ -26,6 +22,9 @@ if huggingface_api_token:
     login(token=huggingface_api_token)
 else:
     st.error("Hugging Face API token not found. Please set HUGGINGFACEHUB_API_TOKEN in your .env file.")
+
+# Initialize Hugging Face InferenceClient
+hf_client = InferenceClient(api_key=huggingface_api_token)
 
 def get_pdf_text(pdf_docs):
     text = ""
@@ -53,19 +52,13 @@ def get_conversational_chain(model_name):
     Answer:
     """
     
-    # model_mapping = {
-    #     "Gemma 2": pipeline("text-generation", model="google/gemma-2-9b"),
-    #     "Llama 3.1": pipeline("text-generation", model="meta-llama/Llama-3.1-8B"),
-    #     "Mistral": pipeline("text-generation", model="mistralai/Mistral-7B-v0.1"),
-    #     "Qwen 2": pipeline("text-generation", model="Qwen/Qwen2-7B")
-    # }
     model_mapping = {
-        "Gemma 2": OllamaLLM(model="phi3"),
-        "Others" : None
-        # "Llama 3.1": OllamaLLM(model="llama3.1:8b"),
-        # "Mistral": OllamaLLM(model="mistral:7b"),
-        # "Qwen 2": OllamaLLM(model="qwen2:7b")
+        "Llama 3.3-70B-Instruct": "llama-3.3-70B-Instruct"  # Placeholder for special handling
+        "Others": None
     }
+    
+    if model_name == "Llama 3.3-70B-Instruct":
+        return model_mapping[model_name]
     
     prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
     chain = load_qa_chain(model_mapping[model_name], chain_type="stuff", prompt=prompt)
@@ -75,18 +68,32 @@ def user_input(user_question, model_name):
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
     new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
     docs = new_db.similarity_search(user_question)
-    chain = get_conversational_chain(model_name)
-    start_time = time.time()
-    response = chain({"input_documents": docs, "question": user_question}, return_only_outputs=True)
-    elapsed_time = time.time() - start_time
-    return response["output_text"], elapsed_time
+    
+    if model_name == "Llama 3.3-70B-Instruct":
+        messages = [{"role": "user", "content": user_question}]
+        stream = hf_client.chat.completions.create(
+            model="meta-llama/Llama-3.3-70B-Instruct",
+            messages=messages,
+            max_tokens=500,
+            stream=True
+        )
+        start_time = time.time()
+        response_text = "".join(chunk.choices[0].delta.content for chunk in stream)
+        elapsed_time = time.time() - start_time
+        return response_text, elapsed_time
+    else:
+        chain = get_conversational_chain(model_name)
+        start_time = time.time()
+        response = chain({"input_documents": docs, "question": user_question}, return_only_outputs=True)
+        elapsed_time = time.time() - start_time
+        return response["output_text"], elapsed_time
 
 def main():
     st.set_page_config("Model Comparison Chat with PDF")
     st.header("Compare AI Models Chat with PDF 💬")
     
     user_question = st.text_input("Ask a Question from the PDF Files")
-    model_name = st.selectbox("Select Model", ["Gemma 2", "Llama 3.1", "Mistral", "Qwen 2"])
+    model_name = st.selectbox("Select Model", ["Gemma 2", "Llama 3.3-70B-Instruct", "Others"])
     
     if user_question and model_name:
         with st.spinner(f"Getting response from {model_name}..."):
