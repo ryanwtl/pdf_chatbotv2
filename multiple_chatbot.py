@@ -53,7 +53,7 @@ def get_conversational_chain(model_name):
     """
     
     model_mapping = {
-        "Llama 3.3-70B-Instruct": "llama-3.3-70B-Instruct"  # Placeholder for special handling
+        "Llama 3.3-70B-Instruct": "llama-3.3-70B-Instruct",  # Placeholder for special handling
         "Others": None
     }
     
