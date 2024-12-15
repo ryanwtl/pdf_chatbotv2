@@ -65,7 +65,8 @@ def get_conversational_chain(model_name):
     return chain
 
 def user_input(user_question, model_name):
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    # embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    embeddings = hf_client.text_embeddings(model="sentence-transformers/all-MiniLM-L6-v2", inputs=texts)
     new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
     docs = new_db.similarity_search(user_question)
     
@@ -93,7 +94,7 @@ def main():
     st.header("Compare AI Models Chat with PDF 💬")
     
     user_question = st.text_input("Ask a Question from the PDF Files")
-    model_name = st.selectbox("Select Model", ["Gemma 2", "Llama 3.3-70B-Instruct", "Others"])
+    model_name = st.selectbox("Select Model", ["Llama 3.3-70B-Instruct", "Others"])
     
     if user_question and model_name:
         with st.spinner(f"Getting response from {model_name}..."):
