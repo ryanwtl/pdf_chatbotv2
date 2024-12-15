@@ -39,7 +39,7 @@ def get_text_chunks(text):
     return text_splitter.split_text(text)
 
 def get_vector_store(text_chunks):
-    embeddings = hf_client.text_embeddings(model="sentence-transformers/all-MiniLM-L6-v2")
+    embeddings = hf_client.embeddings(model="sentence-transformers/all-MiniLM-L6-v2") # Use embeddings method
     vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
     vector_store.save_local("faiss_index")
 
@@ -66,7 +66,7 @@ def get_conversational_chain(model_name):
 
 def user_input(user_question, model_name):
     # embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-    embeddings = hf_client.text_embeddings(model="sentence-transformers/all-MiniLM-L6-v2")
+    embeddings = hf_client.embeddings(model="sentence-transformers/all-MiniLM-L6-v2") # Use embeddings method
     new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
     docs = new_db.similarity_search(user_question)
     
