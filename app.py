@@ -18,14 +18,14 @@ load_dotenv()
 google_api_key = os.getenv("GOOGLE_API_KEY")
 huggingface_api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 
-# # Ensure Hugging Face authentication is in place
-# if huggingface_api_token:
-#     login(token=huggingface_api_token)
-# else:
-#     st.error("Hugging Face API token not found. Please set HUGGINGFACEHUB_API_TOKEN in your .env file.")
+# Ensure Hugging Face authentication is in place
+if huggingface_api_token:
+    login(token=huggingface_api_token)
+else:
+    st.error("Hugging Face API token not found. Please set HUGGINGFACEHUB_API_TOKEN in your .env file.")
 
-# # Initialize Hugging Face InferenceClient
-# hf_client = InferenceClient(api_key=huggingface_api_token)
+# Initialize Hugging Face InferenceClient
+hf_client = InferenceClient(api_key=huggingface_api_token)
 
 def get_pdf_text(pdf_docs):
     text = ""
