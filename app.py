@@ -76,7 +76,7 @@ def user_input(user_question, model_name):
         messages = [
         	{
         		"role": "user",
-        		"content": "What is the capital of France?"
+        		"content": user_question
         	}
         ]        
         completion = hf_client.chat.completions.create(
