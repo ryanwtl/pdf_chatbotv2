@@ -74,19 +74,21 @@ def user_input(user_question, model_name):
     
     if model_name == "QwQ-32B-Preview":
         messages = [
-            { "role": "system", "content": "You are a helpful and harmless assistant. You are Qwen developed by Alibaba. You should think step-by-step." },
-            { "role": "user", "content": user_question }
-    ]
-        stream = hf_client.chat.completions.create(
-            model="Qwen/QwQ-32B-Preview",
-            messages=messages, 
-        	temperature=0.5,
-        	max_tokens=2048,
-        	top_p=0.7,
-        	stream=True
+        	{
+        		"role": "user",
+        		"content": "What is the capital of France?"
+        	}
+        ]        
+        completion = client.chat.completions.create(
+            model="Qwen/QwQ-32B-Preview", 
+        	messages=messages, 
+        	max_tokens=500
         )
         start_time = time.time()
-        response_text = "".join(chunk.choices[0].delta.content for chunk in stream)
+        if model_name == "QwQ-32B-Preview":
+            response_text = completion.choices[0].message
+        else:
+            response_text = "".join(chunk.choices[0].delta.content for chunk in stream)
         elapsed_time = time.time() - start_time
         return response_text, elapsed_time
     else:
