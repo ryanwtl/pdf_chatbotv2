@@ -55,7 +55,7 @@ def get_conversational_chain(model_name):
     """
     
     model_mapping = {
-        "Llama 3.3-70B-Instruct": "llama-3.3-70B-Instruct",  # Placeholder for special handling
+        "Qwen/QwQ-32B-Preview": "Qwen/QwQ-32B-Preview",  # Placeholder for special handling
         "Others": None
     }
     
@@ -73,12 +73,17 @@ def user_input(user_question, model_name):
     docs = new_db.similarity_search(user_question)
     
     if model_name == "Llama 3.3-70B-Instruct":
-        messages = [{"role": "user", "content": user_question}]
+        messages = [
+            { "role": "system", "content": "You are a helpful and harmless assistant. You are Qwen developed by Alibaba. You should think step-by-step." },
+            { "role": "user", "content": "你和其他model有什么分别？" }
+    ]
         stream = hf_client.chat.completions.create(
             model="meta-llama/Llama-3.3-70B-Instruct",
-            messages=messages,
-            max_tokens=500,
-            stream=True
+            messages=messages, 
+        	temperature=0.5,
+        	max_tokens=2048,
+        	top_p=0.7,
+        	stream=True
         )
         start_time = time.time()
         response_text = "".join(chunk.choices[0].delta.content for chunk in stream)
@@ -96,7 +101,7 @@ def main():
     st.header("Compare AI Models Chat with PDF 💬")
     
     user_question = st.text_input("Ask a Question from the PDF Files")
-    model_name = st.selectbox("Select Model", ["Llama 3.3-70B-Instruct", "Others"])
+    model_name = st.selectbox("Select Model", ["QwQ-32B-Preview", "Others"])
     
     if user_question and model_name:
         with st.spinner(f"Getting response from {model_name}..."):
@@ -104,6 +109,8 @@ def main():
             st.write(f"### {model_name} Reply:")
             st.write(response)
             st.write(f"Response Time: {elapsed_time:.2f} seconds")
+    else:
+        st.write("Function not supported yet")
     
     with st.sidebar:
         st.title("Menu:")
