@@ -15,16 +15,17 @@ from langchain_ollama import OllamaLLM
 load_dotenv()
 
 # Retrieve API keys from environment variables
+google_api_key = os.getenv("GOOGLE_API_KEY")
 huggingface_api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 
-# Ensure Hugging Face authentication is in place
-if huggingface_api_token:
-    login(token=huggingface_api_token)
-else:
-    st.error("Hugging Face API token not found. Please set HUGGINGFACEHUB_API_TOKEN in your .env file.")
+# # Ensure Hugging Face authentication is in place
+# if huggingface_api_token:
+#     login(token=huggingface_api_token)
+# else:
+#     st.error("Hugging Face API token not found. Please set HUGGINGFACEHUB_API_TOKEN in your .env file.")
 
-# Initialize Hugging Face InferenceClient
-hf_client = InferenceClient(api_key=huggingface_api_token)
+# # Initialize Hugging Face InferenceClient
+# hf_client = InferenceClient(api_key=huggingface_api_token)
 
 def get_pdf_text(pdf_docs):
     text = ""
@@ -39,7 +40,8 @@ def get_text_chunks(text):
     return text_splitter.split_text(text)
 
 def get_vector_store(text_chunks):
-    embeddings = hf_client.embeddings(model="sentence-transformers/all-MiniLM-L6-v2") # Use embeddings method
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    # embeddings = hf_client.embeddings(model="sentence-transformers/all-MiniLM-L6-v2") # Use embeddings method
     vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
     vector_store.save_local("faiss_index")
 
@@ -65,8 +67,8 @@ def get_conversational_chain(model_name):
     return chain
 
 def user_input(user_question, model_name):
-    # embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-    embeddings = hf_client.embeddings(model="sentence-transformers/all-MiniLM-L6-v2") # Use embeddings method
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    # embeddings = hf_client.embeddings(model="sentence-transformers/all-MiniLM-L6-v2") # Use embeddings method
     new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
     docs = new_db.similarity_search(user_question)
     
