@@ -73,10 +73,12 @@ def user_input(user_question, model_name):
     docs = new_db.similarity_search(user_question)
     
     if model_name == "QwQ-32B-Preview":
+        chain = get_conversational_chain(model_name)
+        start_time = time.time()
         messages = [
         	{
         		"role": "user",
-        		"content": user_question
+        		"content": f"PDF: {new_db} Question:{user_question}"
         	}
         ]        
         completion = hf_client.chat.completions.create(
@@ -85,18 +87,15 @@ def user_input(user_question, model_name):
         	max_tokens=500
         )
         start_time = time.time()
+        response = chain({"input_documents": docs, "question": user_question}, return_only_outputs=True)
         if model_name == "QwQ-32B-Preview":
             response_text = completion.choices[0].message
         else:
             response_text = "".join(chunk.choices[0].delta.content for chunk in stream)
-        elapsed_time = time.time() - start_time
-        return response_text, elapsed_time
-    else:
-        chain = get_conversational_chain(model_name)
-        start_time = time.time()
-        response = chain({"input_documents": docs, "question": user_question}, return_only_outputs=True)
-        elapsed_time = time.time() - start_time
-        return response["output_text"], elapsed_time
+
+
+    elapsed_time = time.time() - start_time
+    return response["output_text"], elapsed_time
 
 def main():
     st.set_page_config("Model Comparison Chat with PDF")
