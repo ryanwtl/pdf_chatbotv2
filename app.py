@@ -78,7 +78,7 @@ def user_input(user_question, model_name):
             { "role": "user", "content": user_question }
     ]
         stream = hf_client.chat.completions.create(
-            model="meta-llama/Llama-3.3-70B-Instruct",
+            model="Qwen/QwQ-32B-Preview",
             messages=messages, 
         	temperature=0.5,
         	max_tokens=2048,
