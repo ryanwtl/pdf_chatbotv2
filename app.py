@@ -75,7 +75,7 @@ def user_input(user_question, model_name):
     if model_name == "Llama 3.3-70B-Instruct":
         messages = [
             { "role": "system", "content": "You are a helpful and harmless assistant. You are Qwen developed by Alibaba. You should think step-by-step." },
-            { "role": "user", "content": "你和其他model有什么分别？" }
+            { "role": "user", "content": user_question }
     ]
         stream = hf_client.chat.completions.create(
             model="meta-llama/Llama-3.3-70B-Instruct",
