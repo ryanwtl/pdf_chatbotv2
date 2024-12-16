@@ -55,11 +55,11 @@ def get_conversational_chain(model_name):
     """
     
     model_mapping = {
-        "Qwen/QwQ-32B-Preview": "Qwen/QwQ-32B-Preview",  # Placeholder for special handling
+        "QwQ-32B-Preview": "QwQ-32B-Preview",  # Placeholder for special handling
         "Others": None
     }
     
-    if model_name == "Qwen/QwQ-32B-Preview":
+    if model_name == "QwQ-32B-Preview":
         return model_mapping[model_name]
     
     prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
@@ -72,7 +72,7 @@ def user_input(user_question, model_name):
     new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
     docs = new_db.similarity_search(user_question)
     
-    if model_name == "Llama 3.3-70B-Instruct":
+    if model_name == "QwQ-32B-Preview":
         messages = [
             { "role": "system", "content": "You are a helpful and harmless assistant. You are Qwen developed by Alibaba. You should think step-by-step." },
             { "role": "user", "content": user_question }
