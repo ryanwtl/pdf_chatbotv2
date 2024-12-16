@@ -79,7 +79,7 @@ def user_input(user_question, model_name):
         		"content": "What is the capital of France?"
         	}
         ]        
-        completion = client.chat.completions.create(
+        completion = hf_client.chat.completions.create(
             model="Qwen/QwQ-32B-Preview", 
         	messages=messages, 
         	max_tokens=500
