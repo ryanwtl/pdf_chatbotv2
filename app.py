@@ -59,7 +59,7 @@ def get_conversational_chain(model_name):
         "Others": None
     }
     
-    if model_name == "Llama 3.3-70B-Instruct":
+    if model_name == "Qwen/QwQ-32B-Preview":
         return model_mapping[model_name]
     
     prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
